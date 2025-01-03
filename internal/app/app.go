@@ -2,6 +2,9 @@ package app
 
 import (
 	"app-news/config"
+	"app-news/internal/adapter/handler"
+	"app-news/internal/adapter/repository"
+	"app-news/internal/core/service"
 	"app-news/lib/auth"
 	"app-news/lib/middleware"
 	"app-news/lib/pagination"
@@ -20,7 +23,7 @@ import (
 
 func RunServer() {
 	cfg := config.NewConfig()
-	_, err := cfg.ConnectionPostgres()
+	db, err := cfg.ConnectionPostgres()
 	if err != nil {
 		log.Fatal().Msgf("Error connecting to database: %v", err)
 		return
@@ -30,10 +33,19 @@ func RunServer() {
 	cdfR2 := cfg.LoadAwsConfig()
 	_ = s3.NewFromConfig(cdfR2)
 
-	_ = auth.NewJwt(cfg)
+	jwt := auth.NewJwt(cfg)
 	_ = middleware.NewMiddleware(cfg)
 
 	_ = pagination.NewPagination()
+
+	// repository
+	authRepo := repository.NewAuthRepository(db.DB)
+
+	// service
+	authService := service.NewAuthRepository(authRepo, cfg, jwt)
+
+	// handler
+	authHandler := handler.NewAuthHandler(authService)
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -41,7 +53,8 @@ func RunServer() {
 		Format: "[${time}] ${ip} ${status} - ${latency} ${method} ${path}\n",
 	}))
 
-	_ = app.Group("/api")
+	api := app.Group("/api")
+	api.Post("/login", authHandler.Login)
 
 	// Router setup
 	go func() {
