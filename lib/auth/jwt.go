@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -39,29 +40,43 @@ func (o *Options) GenerateToken(data *entity.JwtData) (string, int64, error) {
 func (o *Options) VerifyAccessToken(token string) (*entity.JwtData, error) {
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("SigningMethodHMAC invalid")
+			log.Error("[JWT] Invalid signing method")
+			return nil, fmt.Errorf("Invalid signing method")
 		}
 		return []byte(o.SigningKey), nil
 	})
 
 	if err != nil {
+		log.Errorf("[JWT] Error parsing token: %v", err)
 		return nil, err
 	}
 
-	if parsedToken.Valid {
-		claim, ok := parsedToken.Claims.(jwt.MapClaims)
-		if !ok || parsedToken.Valid {
-			return nil, err
-		}
-
-		jwtData := &entity.JwtData{
-			UserId: claim["user_id"].(float64),
-		}
-
-		return jwtData, nil
+	// Pastikan token valid
+	if !parsedToken.Valid {
+		log.Error("[JWT] Token is invalid or expired")
+		return nil, fmt.Errorf("Token is invalid or expired")
 	}
 
-	return nil, fmt.Errorf("token invalid")
+	// Ambil klaim dari token
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Error("[JWT] Failed to parse claims as MapClaims")
+		return nil, fmt.Errorf("Failed to parse claims")
+	}
+
+	log.Infof("[JWT] Parsed claims: %+v", claims)
+
+	// Ambil UserId dari klaim
+	userID, ok := claims["user_id"].(float64)
+	if !ok {
+		log.Error("[JWT] Missing or invalid user_id in claims")
+		return nil, fmt.Errorf("Invalid or missing user_id in token claims")
+	}
+
+	// Return JwtData
+	return &entity.JwtData{
+		UserId: userID,
+	}, nil
 }
 
 func NewJwt(cfg *config.Config) Jwt {

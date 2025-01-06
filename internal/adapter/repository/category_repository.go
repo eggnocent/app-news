@@ -5,6 +5,7 @@ import (
 	"app-news/internal/core/domain/model"
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
@@ -31,15 +32,15 @@ func NewCategoryRepository(db *gorm.DB) CategoryRespository {
 func (c *categoryRepository) GetCategories(ctx context.Context) ([]entity.CategoryEntity, error) {
 	var modelCategories []model.Category
 
-	err := c.db.Order("created_at DESC").Preload("User").Find(&modelCategories).Error
+	err = c.db.Order("created_at DESC").Preload("User").Find(&modelCategories).Error
 	if err != nil {
-		code = "[REPOSITORY] GetCategories -1"
+		code = "[REPOSITORY] GetCategories - 1"
 		log.Errorw(code, err)
 		return nil, err
 	}
 
 	if len(modelCategories) == 0 {
-		code = "[REPOSITORY] GetCategories -2"
+		code = "[REPOSITORY] GetCategories - 2"
 		err = errors.New("data not found")
 		log.Errorw(code, err)
 		return nil, err
@@ -59,6 +60,7 @@ func (c *categoryRepository) GetCategories(ctx context.Context) ([]entity.Catego
 			},
 		})
 	}
+
 	return resps, nil
 }
 
@@ -66,7 +68,31 @@ func (c *categoryRepository) GetCategoryByID(ctx context.Context, id int64) ([]e
 	panic("unimplemented")
 }
 func (c *categoryRepository) CreateCategory(ctx context.Context, req entity.CategoryEntity) error {
-	panic("unimplemented")
+	var countSlug int64
+
+	err = c.db.Table("categories").Where("slug = ?", req.Slug).Count(&countSlug).Error
+	if err != nil {
+		code = "[REPOSITORY] CreateCategory - 2"
+		log.Errorw(code, err)
+		return err
+	}
+
+	countSlug = countSlug + 1
+	slug := fmt.Sprintf("%s-%d", req.Slug, countSlug)
+
+	modelCategory := model.Category{
+		Title:       req.Title,
+		Slug:        slug,
+		CreatedByID: req.User.ID,
+	}
+
+	err = c.db.Create(&modelCategory).Error
+	if err != nil {
+		code = "[REPOSITORY] CreateCategory - 1"
+		log.Errorw(code, err)
+		return err
+	}
+	return nil
 }
 
 func (c *categoryRepository) UpdateCategory(ctx context.Context, req entity.CategoryEntity) error {

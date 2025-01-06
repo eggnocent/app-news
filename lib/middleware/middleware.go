@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 type Middleware interface {
@@ -23,6 +24,7 @@ func (o *Options) CheckToken() func(*fiber.Ctx) error {
 		var errorResponse response.ErrorResponseDefault
 		authHandler := c.Get("Authorization")
 		if authHandler == "" {
+			log.Error("[MIDDLEWARE] Missing authorization header")
 			errorResponse.Meta.Status = false
 			errorResponse.Meta.Message = "Missing authorization Header"
 			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
@@ -31,12 +33,14 @@ func (o *Options) CheckToken() func(*fiber.Ctx) error {
 		tokenString := strings.Split(authHandler, "Bearer ")[1]
 		claims, err := o.authJwt.VerifyAccessToken(tokenString)
 		if err != nil {
+			log.Errorf("[MIDDLEWARE] Invalid or expired token: %v", err)
 			errorResponse.Meta.Status = false
 			errorResponse.Meta.Message = "Invalid or expired token"
 			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
 		}
 
-		c.Locals("user", claims)
+		log.Infof("[MIDDLEWARE] Token validated. Claims: %+v", claims)
+		c.Locals("user", claims) // Set klaim ke context
 
 		return c.Next()
 	}

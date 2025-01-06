@@ -3,6 +3,7 @@ package service
 import (
 	"app-news/internal/adapter/repository"
 	"app-news/internal/core/domain/entity"
+	"app-news/lib/conv"
 	"context"
 
 	"github.com/gofiber/fiber/v2/log"
@@ -44,7 +45,21 @@ func (c *categoryService) GetCategoryByID(ctx context.Context, id int64) ([]enti
 
 // CreateCategory implements CategoryService.
 func (c *categoryService) CreateCategory(ctx context.Context, req entity.CategoryEntity) error {
-	panic("s")
+	slug, err := conv.GenerateSlug(req.Title)
+	if err != nil {
+		code = "[SERVICE] CreateCategory - 1"
+		log.Errorw(code, err)
+		return err
+	}
+	req.Slug = slug
+
+	err = c.categoryRepository.CreateCategory(ctx, req)
+	if err != nil {
+		code = "[SERVICE] CreateCategory - 2"
+		log.Errorw(code, err)
+		return err
+	}
+	return nil
 }
 
 // UpdateCategory implements CategoryService.
