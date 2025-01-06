@@ -68,7 +68,32 @@ func (c *categoryService) CreateCategory(ctx context.Context, req entity.Categor
 
 // UpdateCategory implements CategoryService.
 func (c *categoryService) UpdateCategory(ctx context.Context, req entity.CategoryEntity) error {
-	panic("unimplemented")
+	categoryData, err := c.categoryRepository.GetCategoryByID(ctx, req.ID)
+	if err != nil {
+		code = "[SERVICE] UpdateCategory - 1"
+		log.Errorw(code, err)
+		return err
+	}
+	slug, err := conv.GenerateSlug(req.Title)
+	if err != nil {
+		code = "[SERVICE] UpdateCategory - 2"
+		log.Errorw(code, err)
+		return err
+	}
+	if categoryData.Title == req.Title {
+		slug = categoryData.Slug
+	}
+
+	req.Slug = slug
+
+	err = c.categoryRepository.UpdateCategory(ctx, req)
+	if err != nil {
+		code = "[SERVICE] UpdateCategory - 3"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
 }
 
 // DeleteCategory implements CategoryService.

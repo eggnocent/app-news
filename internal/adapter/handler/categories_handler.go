@@ -118,7 +118,6 @@ func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error {
 	defaultSuccessResponse.Data = categoryResponse
 
 	return c.JSON(defaultSuccessResponse)
-	panic("unimplemented")
 }
 
 // CreateCategory implements CategoryHandler.
@@ -175,12 +174,76 @@ func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error {
 	defaultSuccessResponse.Pagination = nil
 	defaultSuccessResponse.Meta.Status = true
 	defaultSuccessResponse.Meta.Message = "Category created successfully"
-	return c.JSON(defaultSuccessResponse)
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
 // UpdateCategory implements CategoryHandler.
 func (ch *categoryHandler) UpdateCategory(c *fiber.Ctx) error {
-	panic("unimplemented")
+	var req request.CategoryReqest
+	claims := c.Locals("user").(*entity.JwtData)
+	userID := claims.UserId
+	if userID == 0 {
+		code = "[HANDLER] UpdateCategory - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	if err = c.BodyParser(&req); err != nil {
+		code = "[HANDLER] UpdateCategory - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		code = "[HANDLER] UpdateCategory - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	idParam := c.Params("categoryID")
+	id, err := conv.StringtoInt(idParam)
+	if err != nil {
+		code = "[HANDLER] UpdateCategory - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	reqEntity := entity.CategoryEntity{
+		ID:    id,
+		Title: req.Title,
+		User: entity.UserEntity{
+			ID: int64(userID),
+		},
+	}
+
+	err = ch.categoryService.UpdateCategory(c.Context(), reqEntity)
+	if err != nil {
+		code = "[HANDLER] UpdateCategory - 5"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Data = nil
+	defaultSuccessResponse.Pagination = nil
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Category updated successfully"
+
+	return c.JSON(defaultSuccessResponse)
 }
 
 // DeleteCategory implements CategoryHandler.
