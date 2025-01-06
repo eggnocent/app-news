@@ -66,6 +66,7 @@ func RunServer() {
 	categoryApp := adminApp.Group("/categories")
 	categoryApp.Get("/", categoryHandler.GetCategories)
 	categoryApp.Post("/create-category", categoryHandler.CreateCategory)
+	categoryApp.Get("/:categoryID", categoryHandler.GetCategoryByID)
 
 	// Router setup
 	go func() {

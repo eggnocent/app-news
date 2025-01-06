@@ -5,6 +5,7 @@ import (
 	"app-news/internal/adapter/handler/response"
 	"app-news/internal/core/domain/entity"
 	"app-news/internal/core/service"
+	"app-news/lib/conv"
 	validatorLib "app-news/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
@@ -72,6 +73,51 @@ func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error {
 
 // GetCategoryByID implements CategoryHandler.
 func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	userID := claims.UserId
+	if userID == 0 {
+		code = "[HANDLER] GetCategoriesbyID - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	idParam := c.Params("categoryID")
+	id, err := conv.StringtoInt(idParam)
+	if err != nil {
+		code = "[HANDLER] GetCategoriesbyID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	result, err := ch.categoryService.GetCategoryByID(c.Context(), id)
+	if err != nil {
+		code = "[HANDLER] GetCategoriesbyID - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	categoryResponse := response.SuccessCategoryResponse{
+		ID:            result.ID,
+		Title:         result.Title,
+		Slug:          result.Slug,
+		CreatedByName: result.User.Name,
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Pagination = nil
+	defaultSuccessResponse.Meta.Message = "Category fetched successfully"
+	defaultSuccessResponse.Data = categoryResponse
+
+	return c.JSON(defaultSuccessResponse)
 	panic("unimplemented")
 }
 

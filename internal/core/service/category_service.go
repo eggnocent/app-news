@@ -11,7 +11,7 @@ import (
 
 type CategoryService interface {
 	GetCategories(ctx context.Context) ([]entity.CategoryEntity, error)
-	GetCategoryByID(ctx context.Context, id int64) ([]entity.CategoryEntity, error)
+	GetCategoryByID(ctx context.Context, id int64) (*entity.CategoryEntity, error)
 	CreateCategory(ctx context.Context, req entity.CategoryEntity) error
 	UpdateCategory(ctx context.Context, req entity.CategoryEntity) error
 	DeleteCategory(ctx context.Context, id int64) error
@@ -19,6 +19,10 @@ type CategoryService interface {
 
 type categoryService struct {
 	categoryRepository repository.CategoryRespository
+}
+
+func NewCategoryService(categoryRepo repository.CategoryRespository) CategoryService {
+	return &categoryService{categoryRepository: categoryRepo}
 }
 
 // GetCategories implements CategoryService.
@@ -33,7 +37,7 @@ func (c *categoryService) GetCategories(ctx context.Context) ([]entity.CategoryE
 }
 
 // GetCategoryByID implements CategoryService.
-func (c *categoryService) GetCategoryByID(ctx context.Context, id int64) ([]entity.CategoryEntity, error) {
+func (c *categoryService) GetCategoryByID(ctx context.Context, id int64) (*entity.CategoryEntity, error) {
 	result, err := c.categoryRepository.GetCategoryByID(ctx, id)
 	if err != nil {
 		code = "[SERVICE] GetCategoryByID - 1"
@@ -70,8 +74,4 @@ func (c *categoryService) UpdateCategory(ctx context.Context, req entity.Categor
 // DeleteCategory implements CategoryService.
 func (c *categoryService) DeleteCategory(ctx context.Context, id int64) error {
 	panic("unimplemented")
-}
-
-func NewCategoryService(categoryRepo repository.CategoryRespository) CategoryService {
-	return &categoryService{categoryRepository: categoryRepo}
 }
