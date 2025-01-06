@@ -68,6 +68,7 @@ func RunServer() {
 	categoryApp.Post("/create-category", categoryHandler.CreateCategory)
 	categoryApp.Get("/get-one-category/:categoryID", categoryHandler.GetCategoryByID)
 	categoryApp.Put("/update-category/:categoryID", categoryHandler.UpdateCategory)
+	categoryApp.Delete("/delete-category/:categoryID", categoryHandler.DeleteCategory)
 
 	// Router setup
 	go func() {

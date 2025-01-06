@@ -143,5 +143,24 @@ func (c *categoryRepository) UpdateCategory(ctx context.Context, req entity.Cate
 }
 
 func (c *categoryRepository) DeleteCategory(ctx context.Context, id int64) error {
-	panic("unimplemented")
+	var count int64
+	err = c.db.Table("contents").Where("category_id = ?", id).Count(&count).Error
+	if err != nil {
+		code = "[REPOSITORY] DeleteCategory - 1"
+		log.Errorw(code, err)
+		return err
+	}
+
+	if count > 0 {
+		return errors.New("cannot delete a category that has assocated contents")
+	}
+
+	err = c.db.Where("id = ?", id).Delete(&model.Category{}).Error
+	if err != nil {
+		code = "[REPOSITORY] DeleteCategory - 2"
+		log.Errorw(code, err)
+		return err
+	}
+
+	return nil
 }
