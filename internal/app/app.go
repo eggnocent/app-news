@@ -2,6 +2,7 @@ package app
 
 import (
 	"app-news/config"
+	"app-news/internal/adapter/cloudflare"
 	"app-news/internal/adapter/handler"
 	"app-news/internal/adapter/repository"
 	"app-news/internal/core/service"
@@ -31,7 +32,8 @@ func RunServer() {
 
 	// Cloudflare R2
 	cdfR2 := cfg.LoadAwsConfig()
-	_ = s3.NewFromConfig(cdfR2)
+	s3Client := s3.NewFromConfig(cdfR2)
+	r2Adapter := cloudflare.NewCloudflareAdapter(s3Client, *cfg)
 
 	jwt := auth.NewJwt(cfg)
 	middlewareAuth := middleware.NewMiddleware(cfg)
@@ -41,14 +43,17 @@ func RunServer() {
 	// repository
 	authRepo := repository.NewAuthRepository(db.DB)
 	categoryRepo := repository.NewCategoryRepository(db.DB)
+	contentRepo := repository.NewContentRepository(db.DB)
 
 	// service
 	authService := service.NewAuthRepository(authRepo, cfg, jwt)
 	categoryService := service.NewCategoryService(categoryRepo)
+	contentService := service.NewContentService(contentRepo, cfg, r2Adapter)
 
 	// handler
 	authHandler := handler.NewAuthHandler(authService)
 	categoryHandler := handler.NewCategoryHandler(categoryService)
+	contentHandler := handler.NewContentHandler(contentService)
 
 	app := fiber.New()
 	app.Use(cors.New())
@@ -69,6 +74,15 @@ func RunServer() {
 	categoryApp.Get("/get-one-category/:categoryID", categoryHandler.GetCategoryByID)
 	categoryApp.Put("/update-category/:categoryID", categoryHandler.UpdateCategory)
 	categoryApp.Delete("/delete-category/:categoryID", categoryHandler.DeleteCategory)
+
+	// content
+	contentApp := adminApp.Group("/contents")
+	contentApp.Get("/", contentHandler.GetContents)
+	contentApp.Get("/:contentID", contentHandler.GetContentByID)
+	contentApp.Post("/create-content", contentHandler.CreateContent)
+	contentApp.Put("/update-content", contentHandler.UpdateContent)
+	contentApp.Delete("/:contentID", contentHandler.DeleteContent)
+	contentApp.Post("upload-image", contentHandler.UploadImageR2)
 
 	// Router setup
 	go func() {
