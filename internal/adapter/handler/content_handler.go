@@ -132,7 +132,7 @@ func (ch *contentHandler) GetContentByID(c *fiber.Ctx) error {
 	}
 
 	defaultSuccessResponse.Data = respContent
-	panic("unimplemented")
+	return c.JSON(defaultSuccessResponse)
 }
 
 // CreateContent implements ContentHandler.

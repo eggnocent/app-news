@@ -98,5 +98,4 @@ func (c *contentService) UploadImageR2(ctx context.Context, req entity.FileUploa
 		return "", err
 	}
 	return urlImage, nil
-	panic("unimplemented")
 }

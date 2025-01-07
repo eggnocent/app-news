@@ -80,7 +80,7 @@ func RunServer() {
 	contentApp.Get("/", contentHandler.GetContents)
 	contentApp.Get("/:contentID", contentHandler.GetContentByID)
 	contentApp.Post("/create-content", contentHandler.CreateContent)
-	contentApp.Put("/update-content", contentHandler.UpdateContent)
+	contentApp.Put("/update-content/:contentID", contentHandler.UpdateContent)
 	contentApp.Delete("/:contentID", contentHandler.DeleteContent)
 	contentApp.Post("upload-image", contentHandler.UploadImageR2)
 
