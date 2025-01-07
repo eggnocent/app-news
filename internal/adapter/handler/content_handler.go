@@ -1,10 +1,15 @@
 package handler
 
 import (
+	"app-news/internal/adapter/handler/request"
 	"app-news/internal/adapter/handler/response"
 	"app-news/internal/core/domain/entity"
 	"app-news/internal/core/service"
 	"app-news/lib/conv"
+	validatorLib "app-news/lib/validator"
+
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -131,13 +136,127 @@ func (ch *contentHandler) GetContentByID(c *fiber.Ctx) error {
 }
 
 // CreateContent implements ContentHandler.
-func (*contentHandler) CreateContent(c *fiber.Ctx) error {
-	panic("unimplemented")
+func (ch *contentHandler) CreateContent(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserId == 0 {
+		code := "[HANDLER] DeleteContent - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	userID := claims.UserId
+	var req request.ContentRequest
+	if err = c.BodyParser(&req); err != nil {
+		code := "[HANDLER] CreateContent - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(&req); err != nil {
+		code := "[HANDLER] CreateContent - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	tags := req.Tags
+	reqEntity := entity.ContentEntity{
+		Title:       req.Title,
+		Excerpt:     req.Excerpt,
+		Description: req.Description,
+		Image:       req.Image,
+		Tags:        tags,
+		Status:      req.Status,
+		CategoryID:  req.CategoryID,
+		CreatedByID: int64(userID),
+	}
+
+	err = ch.contentService.CreateContent(c.Context(), reqEntity)
+	if err != nil {
+		code := "[HANDLER] CreateContent - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Content created successfully"
+	defaultSuccessResponse.Data = nil
+
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
 }
 
 // UpdateContent implements ContentHandler.
-func (*contentHandler) UpdateContent(c *fiber.Ctx) error {
-	panic("unimplemented")
+func (ch *contentHandler) UpdateContent(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserId == 0 {
+		code := "[HANDLER] UpdateContent - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	userID := claims.UserId
+	var req request.ContentRequest
+	if err = c.BodyParser(&req); err != nil {
+		code := "[HANDLER] UpdateContent - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	idParam := c.Params("contentID")
+	contentID, err := conv.StringtoInt(idParam)
+	if err != nil {
+		code = "[HANDLER] UpdateContentsbyID - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid content ID"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	tags := req.Tags
+	reqEntity := entity.ContentEntity{
+		ID:          contentID,
+		Title:       req.Title,
+		Excerpt:     req.Excerpt,
+		Description: req.Description,
+		Image:       req.Image,
+		Tags:        tags,
+		Status:      req.Status,
+		CategoryID:  req.CategoryID,
+		CreatedByID: int64(userID),
+	}
+
+	err = ch.contentService.UpdateContent(c.Context(), reqEntity)
+	if err != nil {
+		code := "[HANDLER] UpdateContent - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Content updated successfully"
+	defaultSuccessResponse.Data = nil
+	return c.Status(fiber.StatusOK).JSON(defaultSuccessResponse)
 }
 
 // DeleteContent implements ContentHandler.
@@ -181,6 +300,70 @@ func (ch *contentHandler) DeleteContent(c *fiber.Ctx) error {
 }
 
 // UploadImageR2 implements ContentHandler.
-func (*contentHandler) UploadImageR2(c *fiber.Ctx) error {
-	panic("unimplemented")
+func (ch *contentHandler) UploadImageR2(c *fiber.Ctx) error {
+	claims := c.Locals("user").(*entity.JwtData)
+	if claims.UserId == 0 {
+		code = "[HANDLER] UploadImageR2 - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorized access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	var req request.FileUploadRequest
+	file, err := c.FormFile("image")
+	if err != nil {
+		code := "[HANDLER] UploadImageR2 - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Failed to parse form file"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = c.SaveFile(file, fmt.Sprintf("./temp/content/%s", file.Filename)); err != nil {
+		code := "[HANDLER] UploadImageR2 - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Failed to save uploaded file"
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	req.Image = fmt.Sprintf("./temp/content/%s", file.Filename)
+	reqEntity := entity.FileUploadEntity{
+		Name: fmt.Sprintf("%d-%d", int(claims.UserId), time.Now().UnixNano()),
+		Path: req.Image,
+	}
+
+	imageUrl, err := ch.contentService.UploadImageR2(c.Context(), reqEntity)
+	if err != nil {
+		code := "[HANDLER] UploadImageR2 - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Failed to upload image to R2"
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	if req.Image != "" {
+		err = os.Remove(req.Image)
+		if err != nil {
+			code := "[HANDLER] UploadImageR2 - 5"
+			log.Errorw(code, err)
+			errorResp.Meta.Status = false
+			errorResp.Meta.Message = "Failed to delete temporary file"
+		}
+	}
+
+	urlImageResp := map[string]interface{}{
+		"urlImage": imageUrl,
+	}
+
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Image uploaded successfully"
+	defaultSuccessResponse.Data = urlImageResp
+	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
+
 }
