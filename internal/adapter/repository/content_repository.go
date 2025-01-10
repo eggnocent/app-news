@@ -39,20 +39,26 @@ func (c *contentRepository) GetContents(ctx context.Context, query entity.QueryS
 		status = query.Status
 	}
 
-	err := c.db.
-		Preload(clause.Associations).
+	sqlMain := c.db.Preload(clause.Associations).
 		Where(
 			"title ILIKE ? OR excerpt ILIKE ? OR description ILIKE ?",
 			"%"+query.Search+"%",
 			"%"+query.Search+"%",
 			"%"+query.Search+"%",
-		).
+		).Where("status ILIKE ?", "%"+status+"%")
+
+	if query.CategoryID > 0 {
+		sqlMain = sqlMain.Where("category_id =?", query.CategoryID)
+	}
+
+	err = sqlMain.
 		Order(order).
 		Limit(query.Limit).
 		Offset(offset).
 		Preload("User").
 		Find(&modelContents).
 		Where("status LIKE ?", "%"+status+"%").
+		Find(&modelContents).
 		Error
 
 	if err != nil {

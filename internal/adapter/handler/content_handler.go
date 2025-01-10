@@ -421,13 +421,27 @@ func (ch *contentHandler) GetContentWithQuery(c *fiber.Ctx) error {
 	if c.Query("search") != "" {
 		search = c.Query("search")
 	}
+
+	categoryID := 0
+	if c.Query("categoryID") != "" {
+		categoryID, err = conv.StringtoInt(c.Query("categoryID"))
+		if err != nil {
+			code = "[HANDLER] GetContentWithQuery - 4"
+			log.Errorw(code, err)
+			errorResp.Meta.Status = false
+			errorResp.Meta.Message = "Invalid category ID"
+			return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+		}
+	}
+
 	reqEntity := entity.QueryString{
-		Limit:     limit,
-		Page:      page,
-		OrderBy:   orderBy,
-		OrderType: orderType,
-		Search:    search,
-		Status:    "PUBLISH",
+		Limit:      limit,
+		Page:       page,
+		OrderBy:    orderBy,
+		OrderType:  orderType,
+		Search:     search,
+		Status:     "PUBLISH",
+		CategoryID: int64(categoryID),
 	}
 
 	results, err := ch.contentService.GetContents(c.Context(), reqEntity)
