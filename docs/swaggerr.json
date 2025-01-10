@@ -1,0 +1,821 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "description": "This is an API for News Application",
+        "title": "App News",
+        "contact": {
+            "name": "Admin",
+            "email": "admin@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080/api"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "description": "API LOGIN",
+                "tags": ["auth"],
+                "summary": "API LOGIN",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/categories": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Category",
+                "tags": ["category"],
+                "summary": "API Category",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "allOf": [
+                                            {
+                                            "$ref": "#/components/schemas/DefaultResponse"
+                                            },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CategoryResponse"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
+,
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "description": "API Create Category",
+    "tags": ["category"],
+    "summary": "API Create Category",
+    "requestBody": {
+        "required": true,
+        "content": {
+            "application/json": {
+                "schema": {
+                    "$ref": "#/components/schemas/CategoryRequest"
+                }
+            }
+        }
+    },
+    "responses": {
+        "201": {
+            "description": "Category created successfully",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "$ref": "#/components/schemas/DefaultResponse"
+                    }
+                }
+            }
+        },
+        "400": {
+            "description": "Bad Request",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "$ref": "#/components/schemas/ErrorResponse"
+                    }
+                }
+            }
+        }
+    }
+            }
+        },
+        "/admin/categories/{categoryID}":{
+            "get": {
+                "security":[
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description":"API Category Get by ID",
+                "tags": ["category"],
+                "summary":"API Category Get by ID",
+                "parameters":{
+                    "name": "categoryID",
+                    "in": "path",
+                    "required": true
+                },
+                "responses": {
+                    "200":{
+                        "description": "Category found successfully",
+                        "content": {
+                            "application/json": {
+                                "allOf":[
+                                    {
+                                        "$ref": "#/components/schemas/DefaultResponse"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "data": {
+                                                    "$ref": "#/components/schemas/CategoryResponse"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security":[
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Category Update",
+                "tags": ["category"],
+                "summary": "API Category Update",
+                "parameters": {
+                    "name": "categoryID",
+                    "in": "path",
+                    "required": true
+                },
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200":{
+                        "description": "Category updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        },
+                        "400":{
+                            "description": "Bad Request",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security":[
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Category Delete",
+                "tags": ["category"],
+                "summary": "API Category Delete",
+                "parameters": {
+                    "name": "categoryID",
+                    "in": "path",
+                    "required": true
+                },
+                "responses": {
+                    "200":{
+                        "description": "Category deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        },
+                        "400":{
+                            "description": "Bad Request",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/contents": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Content",
+                "tags": ["content"],
+                "summary": "API Content",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "allOf": [
+                                        {
+                                            "$ref": "#/components/schemas/DefaultResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ContentResponse"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description":"API Content Create",
+                "tags":["content"],
+                "summary":"API Content Create",
+                "parameters": [
+                    {
+                        "description": "Create Content",
+                        "name": "content",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/components/schemas/ContentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Content created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad Request",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/contents/{contentID}": {
+            "get": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description":"API Content Get by ID",
+                "tags":["content"],
+                "summary":"API Content Get by ID",
+                "parameters": {
+                    "name": "contentID",
+                    "in": "path",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Content found successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad Request",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        },
+                        "404": {
+                            "description": "Content not found",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "Category Update",
+                "tags": ["content"],
+                "summary": "Category Update by ID",
+                "parameters":{
+                    "name": "contentID",
+                    "in": "path",
+                    "required": true
+                },
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ContentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Content updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Content not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Content Delete by ID",
+                "tags": ["content"],
+                "summary": "API Content Delete by ID",
+                "parameters":{
+                    "name": "contentID",
+                    "in": "path",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Content deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Content not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/upload-image": {
+            "post": {
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "description": "API Content upload-image",
+                "tags": ["content"],
+                "summary": "API Content upload-image",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "Image file to upload"
+                                    }
+                                },
+                                "required": ["image"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Image uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DefaultResponse"
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Bad Request",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/ErrorResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "meta": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "An error occurred"
+                            }
+                        }
+                    }
+                }
+            },
+            "DefaultResponse": {
+                "type": "object",
+                "properties": {
+                    "meta": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Success"
+                            }
+                        }
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "john.doe@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "example": "password1234"
+                    }
+                }
+            },
+            "CategoryRequest": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "example": "Technology"
+                    }
+                }
+            },
+            "ContentRequest": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "example": "Article Title"
+                    },
+                    "excerpt": {
+                        "type": "string",
+                        "example": "This is an excerpt."
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Detailed description of the content."
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": ["tag1", "tag2"]
+                    },
+                    "category_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "DRAFT"
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "https://example.com/image.png"
+                    }
+                }
+            },
+            "UpdatePasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "current_password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "example": "password1234"
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "example": "newpassword1234"
+                    },
+                    "confirm_password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "example": "newpassword1234"
+                    }
+                }
+            },
+            "AuthResponse": {
+                "type": "object",
+                "properties": {
+                    "meta": {
+                        "type": "object",
+                        "properties": {
+                            "status": {
+                                "type": "boolean",
+                                "example": true
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Login success"
+                            }
+                        }
+                    },
+                    "access_token": {
+                        "type": "string",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3MzY0NzY3MTIsIm5iZiI6MTczNjM5MDMxMiwianRpIjoiXHUwMDAxIn0.kD0wU3z_JQwEvb_jNAfedIUQ0rKNFAd2P_f1njsjdwqkdnw"
+                    },
+                    "expired_at": {
+                        "type": "integer",
+                        "example": 1736476712
+                    }
+                }
+            },
+            "CategoryResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Category 1"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "category-1"
+                    },
+                    "created_by_name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    }
+                }
+            },
+            "ContentResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Article Title"
+                    },
+                    "excerpt": {
+                        "type": "string",
+                        "example": "This is an excerpt."
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Detailed description of the content."
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "PUBLISHED"
+                    },
+                    "image": {
+                        "type": "string",
+                        "example": "http://example.com/image.png"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": ["data"]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "category_name": {
+                        "type": "string",
+                        "example": "Technology"
+                    },
+                    "author": {
+                        "type": "string",
+                        "example": 1
+                    },
+                    "created_by_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                }
+            },
+            "ProfileResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "john.doe@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 8,
+                        "example": "password1234"
+                    }
+                }
+            }
+        }
+    }
+}
