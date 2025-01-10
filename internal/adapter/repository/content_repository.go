@@ -4,6 +4,7 @@ import (
 	"app-news/internal/core/domain/entity"
 	"app-news/internal/core/domain/model"
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/gofiber/fiber/v2/log"
@@ -12,7 +13,7 @@ import (
 )
 
 type ContentRepository interface {
-	GetContents(ctx context.Context) ([]entity.ContentEntity, error)
+	GetContents(ctx context.Context, query entity.QueryString) ([]entity.ContentEntity, error)
 	GetContentByID(ctx context.Context, id int64) (*entity.ContentEntity, error)
 	CreateContent(ctx context.Context, req entity.ContentEntity) error
 	UpdateContent(ctx context.Context, req entity.ContentEntity) error
@@ -28,9 +29,32 @@ func NewContentRepository(db *gorm.DB) ContentRepository {
 }
 
 // GetContents implements ContentRepository.
-func (c *contentRepository) GetContents(ctx context.Context) ([]entity.ContentEntity, error) {
+func (c *contentRepository) GetContents(ctx context.Context, query entity.QueryString) ([]entity.ContentEntity, error) {
 	var modelContents []model.Content
-	err := c.db.Order("created_at DESC").Preload("User").Preload("Category").Find(&modelContents).Error
+
+	order := fmt.Sprintf("%s %s", query.OrderBy, query.OrderType)
+	offset := (query.Page - 1) * query.Limit
+	status := ""
+	if query.Status != "" {
+		status = query.Status
+	}
+
+	err := c.db.
+		Preload(clause.Associations).
+		Where(
+			"title ILIKE ? OR excerpt ILIKE ? OR description ILIKE ?",
+			"%"+query.Search+"%",
+			"%"+query.Search+"%",
+			"%"+query.Search+"%",
+		).
+		Order(order).
+		Limit(query.Limit).
+		Offset(offset).
+		Preload("User").
+		Find(&modelContents).
+		Where("status LIKE ?", "%"+status+"%").
+		Error
+
 	if err != nil {
 		code = "[REPOSITORY] GetContents - 1"
 		log.Errorw(code, err)
