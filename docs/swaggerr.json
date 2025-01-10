@@ -569,6 +569,239 @@
                     }
                 }
             }
+        },
+        "/fe/categories":{
+            "get": {
+                "description": "API Category",
+                "tags": ["fe"],
+                "summary": "API Category",
+                "responses": {
+                    "200": {
+                        "description":"API Category",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "allOf":[
+                                        {
+                                            "$ref": "#/components/schemas/DefaultResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties":{
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/CategoryResponse"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400":{
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/fe/contents":{
+            "get": {
+                "description":"Get Content",
+                "tags":["fe"],
+                "summary":"Get Content",
+                "parameters":[
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema":{
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 10,
+                            "example": 10
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema":{
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "orderBy",
+                        "schema":{
+                            "type": "string",
+                            "default": "created_at",
+                            "example": "created_at"
+                        }
+                    },
+                    {
+                        "in":"query",
+                        "name":"orderType",
+                        "schema":{
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    },
+                    {
+                        "in":"query",
+                        "name":"search",
+                        "schema":{
+                            "type": "string",
+                            "default":"",
+                            "example": "test"
+                        }
+                    }
+                ],
+                "responses":{
+                    "200": {
+                        "description":"API Content",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "allOf":[
+                                        {
+                                            "$ref": "#/components/schemas/DefaultResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties":{
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/ContentResponse"
+                                                    }
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/fe/contents/{contentID}":{
+            "get": {
+                "description":"Get Content by ID",
+                "tags":["fe"],
+                "summary":"Get Content by ID",
+                "parameters":[
+                    {
+                        "in": "path",
+                        "name": "contentID"
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema":{
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 1,
+                            "example": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "orderBy",
+                        "schema":{
+                            "type": "string",
+                            "default": "created_at",
+                            "example": "created_at"
+                        }
+                    },
+                    {
+                        "in":"query",
+                        "name":"orderType",
+                        "schema":{
+                            "type": "string",
+                            "default": "desc"
+                        }
+                    },
+                    {
+                        "in":"query",
+                        "name":"search",
+                        "schema":{
+                            "type": "string",
+                            "default":"",
+                            "example": "test"
+                        }
+                    }
+                ],
+                "responses":{
+                    "200": {
+                        "description":"API Content",
+                        "content": {
+                            "application/json": {
+                                "schema":{
+                                    "allOf":[
+                                        {
+                                            "$ref": "#/components/schemas/DefaultResponse"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties":{
+                                                "data": {
+                                                    "$ref": "#/components/schemas/ContentResponse"
+                                                },
+                                                "pagination": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "total": {
+                                                            "type": "integer"
+                                                        },
+                                                        "current_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "last_page": {
+                                                            "type": "integer"
+                                                        },
+                                                        "per_page": {
+                                                            "type": "integer"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
