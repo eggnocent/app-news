@@ -665,6 +665,14 @@
                             "default":"",
                             "example": "test"
                         }
+                    },
+                    {
+                        "in":"query",
+                        "name":"categoryId",
+                        "schema":{
+                            "type": "integer",
+                            "default": 0
+                        }
                     }
                 ],
                 "responses":{
