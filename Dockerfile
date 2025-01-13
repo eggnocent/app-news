@@ -27,7 +27,7 @@ COPY ./docs /app/docs
 COPY .env /app/.env
 
 # Expose port for the application
-EXPOSE 8000
+EXPOSE 8080
 
 # Command to run the application
 CMD ["/app/main"]
