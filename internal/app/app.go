@@ -111,6 +111,10 @@ func RunServer() {
 	feApp.Get("/contents", contentHandler.GetContentWithQuery)
 	feApp.Get("/contents/:contentID", contentHandler.GetContentDetail)
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Welcome to the API!")
+	})
+
 	// Router setup
 	go func() {
 		if cfg.App.AppPort == "" {
