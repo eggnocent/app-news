@@ -6,6 +6,7 @@ import (
 	"app-news/internal/core/domain/entity"
 	"app-news/internal/core/service"
 	validatorLib "app-news/lib/validator"
+	"errors"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -89,9 +90,19 @@ func (u *userHandler) UpdatePassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
+	if req.ConfirmPassword != req.NewPassword {
+		code := "[HANDLER] UpdatePassword - 4"
+		err = errors.New("Password do not match")
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Confirm password does not match"
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
 	err = u.userService.UpdatePassword(c.Context(), req.NewPassword, int64(claims.UserId))
 	if err != nil {
-		code := "[HANDLER] UpdatePassword - 4"
+		code := "[HANDLER] UpdatePassword - 5"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
